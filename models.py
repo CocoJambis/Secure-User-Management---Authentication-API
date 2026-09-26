@@ -37,7 +37,7 @@ class CreateUser(BaseModel):
 
         if results['score'] < 3:
             feedback = results['feedback']['suggestions']
-            msg = feedback[0] if feedback else "La password è troppo debole"
+            msg = feedback[0] if feedback else "Password is too weak!"
             raise ValueError(msg)
 
         return v
