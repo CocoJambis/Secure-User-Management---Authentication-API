@@ -25,7 +25,7 @@ def registration(user:CreateUser, db:Session = Depends(get_db)):
     email_check = db.query(User).filter(User.email == user.email).one_or_none()
 
     if email_check:
-        raise HTTPException(status_code=404, detail=f'Utente con {user.email} già esistente!')
+        raise HTTPException(status_code=404, detail=f'User {user.email} already exists')
 
     new_user = User(first_name = user.first_name, last_name = user.last_name, email = user.email, password = get_password_hash(user.password))
 
@@ -41,10 +41,10 @@ def login(user:UserLogIn, db:Session = Depends(get_db)):
     user_exists = db.query(User).filter(User.email == user.email).one_or_none()
 
     if not user_exists:
-        raise HTTPException(status_code=404, detail=f'User inesistente!')
+        raise HTTPException(status_code=404, detail=f'User not found!')
 
     if not verify_password(user.password, user_exists.password):
-        raise HTTPException(status_code= 404, detail=f'Credenziali non valide')
+        raise HTTPException(status_code= 404, detail=f'Wrong credentials')
 
     else:
         return f'LogIn...'
@@ -57,7 +57,7 @@ def get_user(user_email, db:Session = Depends(get_db)):
     if user:
         return user
     else:
-        raise HTTPException(status_code=404, detail=f'{user_email} non esiste')
+        raise HTTPException(status_code=404, detail=f'{user_email} not found!')
 
 #Elimina Utente
 @app.delete('/users/{user_email}')
@@ -67,9 +67,9 @@ def delete_user(user_email, db:Session = Depends(get_db)):
     if user:
         db.delete(user)
         db.commit()
-        return f'{user_email} eliminato'
+        return f'{user_email} deleted'
     else:
-        raise HTTPException(status_code=404, detail=f'{user_email} non esiste')
+        raise HTTPException(status_code=404, detail=f'{user_email} not found!')
 
 #Aggiorna dati utente
 @app.put('/users/{email}', response_model=UserResponse)
@@ -87,7 +87,7 @@ def aggiorna_dati(email, user:UserUpdate, db:Session = Depends(get_db)):
         return user_exists
 
     else:
-        raise HTTPException(status_code=404, detail=f'{email} non esiste')
+        raise HTTPException(status_code=404, detail=f'{email} not found')
 
 #Change password
 @app.put('/users/changepass/{email}')
@@ -100,19 +100,19 @@ def change_password(email, user:ChangePassword, db:Session = Depends(get_db)):
         if verify_password(user.old_password, user_exists.password):
 
             if verify_password(user.new_password, user_exists.password):
-                return f'Non puoi utilizzare la stessa password'
+                return f'You cannot use the same password'
 
             else:
                 user_exists.password = get_password_hash(user.new_password)
                 db.commit()
                 db.refresh(user_exists)
-                return f'Password aggiornata con successo!'            
+                return f'Password updated'            
             
         else:
-            return f'Password Errata!'
+            return f'Wrong password'
 
     else:
-        raise HTTPException(status_code= 404, detail=f'{email} non esiste')
+        raise HTTPException(status_code= 404, detail=f'{email} not found!')
 
 
 
